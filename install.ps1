@@ -61,7 +61,7 @@ Write-Ok "Contraseña permanente fijada"
 
 # ---------- 4. Configuración del cliente (todas las funciones habilitadas) ----------
 $opciones = [ordered]@{
-  'rendezvous-server'     = '127.0.0.1'        # espejado por cloudflared access tcp
+  'custom-rendezvous-server' = '127.0.0.1'      # espejado por cloudflared access tcp
   'relay-server'          = '127.0.0.1'
   'key'                   = $ServerKey
   'disable-udp'           = 'Y'                # Cloudflare Tunnel es TCP-only
