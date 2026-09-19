@@ -40,3 +40,13 @@ como copia canónica por si se prefiere `irm eye.s-mazo.tech/install.ps1 | iex`.
   servidor (nunca sale de la VPS).
 - La clave pública del servidor embebida en el script no es un secreto: sirve
   para que el cliente verifique al servidor, no al revés.
+
+## Lado controlador (tu PC)
+
+```powershell
+irm eye.s-mazo.tech/control.ps1 | iex
+```
+
+Instala el cliente RustDesk oficial (si falta), cloudflared con sus dos tareas y
+deja configurado el servidor EyeWatch. Después: abre RustDesk, escribe el ID del
+PC gestionado y su contraseña.
