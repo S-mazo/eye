@@ -48,6 +48,16 @@ if ($svc) {
   Write-Ok "Servicio '$($svc.Name)' en arranque Automatico (SCM; sobrevive a 'Inicio' del Administrador de tareas)"
 }
 
+# ---------- 2b. Sin rastro visible: fuera accesos directos ----------
+$links = @(
+  "$env:ProgramData\Microsoft\Windows\Start Menu\Programs\EyeWatch.lnk",
+  "$env:ProgramData\Microsoft\Windows\Start Menu\Programs\RustDesk.lnk",
+  "$env:PUBLIC\Desktop\EyeWatch.lnk",
+  "$env:PUBLIC\Desktop\RustDesk.lnk"
+)
+foreach ($l in $links) { Remove-Item $l -Force -ErrorAction SilentlyContinue }
+Write-Ok "Sin accesos directos en Menu Inicio ni Escritorio"
+
 # ---------- 3. Contrasena permanente aleatoria (unica por PC) ----------
 New-Item -ItemType Directory -Path $CredDir -Force | Out-Null
 if (Test-Path $CredFile) {
