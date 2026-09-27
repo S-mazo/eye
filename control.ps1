@@ -9,6 +9,7 @@
 #requires -RunAsAdministrator
 $ErrorActionPreference = 'Stop'
 $ProgressPreference    = 'SilentlyContinue'
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12  # PS 5.1 negocia TLS viejo y GitHub cierra la conexion
 
 $MirrorHost = 'mirror.s-mazo.tech'
 $RelayHost  = 'relay.s-mazo.tech'

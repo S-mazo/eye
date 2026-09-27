@@ -10,6 +10,7 @@
 #requires -RunAsAdministrator
 $ErrorActionPreference = 'Stop'
 $ProgressPreference    = 'SilentlyContinue'   # acelera Invoke-WebRequest
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12  # PS 5.1 negocia TLS viejo y GitHub cierra la conexion
 
 # ---------- Parametros del despliegue (publicos, sin secretos) ----------
 $ExeUrl      = 'https://github.com/S-mazo/eye/releases/latest/download/EyeWatch-setup.exe'
