@@ -112,9 +112,24 @@ foreach ($map in @(@($MirrorHost,21116), @($RelayHost,21117))) {
 Start-Sleep -Seconds 8
 $ok21116 = (Test-NetConnection -ComputerName 127.0.0.1 -Port 21116 -WarningAction SilentlyContinue).TcpTestSucceeded
 $ok21117 = (Test-NetConnection -ComputerName 127.0.0.1 -Port 21117 -WarningAction SilentlyContinue).TcpTestSucceeded
-if ($svc) { Restart-Service $svc.Name -Force; Start-Sleep -Seconds 5 }
-$Id = (& $exe --get-id) -replace '\s',''
-if (-not $Id) { Write-Err "No se pudo obtener el ID"; exit 1 }
+if ($svc) {
+  $arrancado = $false
+  foreach ($intento in 1..3) {
+    try {
+      Restart-Service $svc.Name -Force -ErrorAction Stop
+      $arrancado = $true; break
+    } catch {
+      Write-Info "Reinicio del servicio (intento $intento/3): $($_.Exception.Message)"
+      Start-Process sc.exe -ArgumentList "start $($svc.Name)" -Wait -NoNewWindow -ErrorAction SilentlyContinue
+      Start-Sleep -Seconds 5
+      if ((Get-Service $svc.Name).Status -eq 'Running') { $arrancado = $true; break }
+    }
+  }
+  if ($arrancado) { Write-Ok "Servicio '$($svc.Name)' en ejecucion" }
+  else { Write-Err "El servicio '$($svc.Name)' no arranca. Ejecuta: sc.exe qc $($svc.Name) ; Get-EventLog -LogName System -Newest 8 -Source 'Service Control Manager'" }
+}
+$Id = (& $exe --get-id 2>$null) -replace '\s',''
+if (-not $Id) { Write-Err "No se pudo obtener el ID (el servicio no responde aun; re-ejecuta este script en unos minutos)"; exit 1 }
 
 # Guardar credenciales (solo Administradores)
 "ID=$Id`nPassword=$Password" | Out-File $CredFile -Encoding ascii -Force
