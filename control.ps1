@@ -1,10 +1,10 @@
 <#
 .SYNOPSIS
-  EyeWatch — instalador del lado CONTROLADOR (tu PC, el que se conecta a los demás).
+  EyeWatch  instalador del lado CONTROLADOR (tu PC, el que se conecta a los demas).
 .DESCRIPTION
   Instala el cliente RustDesk oficial (si falta), cloudflared con sus dos tareas
   de arranque (espejo local de mirror/relay) y deja configurado el servidor
-  EyeWatch con su clave pública. Idempotente. Requiere PowerShell como Administrador.
+  EyeWatch con su clave publica. Idempotente. Requiere PowerShell como Administrador.
 #>
 #requires -RunAsAdministrator
 $ErrorActionPreference = 'Stop'
@@ -18,13 +18,13 @@ function Write-Ok($m)   { Write-Host "  [OK] $m" -ForegroundColor Green }
 function Write-Info($m) { Write-Host "  [..] $m" -ForegroundColor Cyan }
 function Write-Err($m)  { Write-Host "  [ERROR] $m" -ForegroundColor Red }
 
-Write-Host "`n=== EyeWatch — Configuración del PC controlador ===`n" -ForegroundColor White
+Write-Host "`n=== EyeWatch  Configuracion del PC controlador ===`n" -ForegroundColor White
 
 # ---------- 1. Cliente RustDesk ----------
 $exe = Get-ChildItem "${env:ProgramFiles(x86)}","$env:ProgramFiles" -Recurse -Filter 'rustdesk.exe' -ErrorAction SilentlyContinue |
        Select-Object -First 1 -ExpandProperty FullName
 if (-not $exe) {
-  Write-Info "RustDesk no está instalado; descargando el cliente oficial..."
+  Write-Info "RustDesk no esta instalado; descargando el cliente oficial..."
   $rel = Invoke-RestMethod 'https://api.github.com/repos/rustdesk/rustdesk/releases/latest'
   $asset = $rel.assets | Where-Object { $_.name -match 'x86_64\.exe$' } | Select-Object -First 1
   $tmp = Join-Path $env:TEMP $asset.name
@@ -37,7 +37,7 @@ if (-not $exe) {
 }
 if ($exe) { Write-Ok "Cliente RustDesk presente" } else { Write-Err "No se pudo instalar RustDesk"; exit 1 }
 
-# ---------- 2. Configuración del servidor EyeWatch ----------
+# ---------- 2. Configuracion del servidor EyeWatch ----------
 $cfgDir = "$env:APPDATA\RustDesk\config"
 New-Item -ItemType Directory -Path $cfgDir -Force | Out-Null
 $cfg = Join-Path $cfgDir 'RustDesk2.toml'
@@ -55,7 +55,7 @@ if (Test-Path $cfg) {
   "key = '$ServerKey'",
   "disable-udp = 'Y'"
 ) | Add-Content $cfg
-Write-Ok "Servidor EyeWatch configurado (127.0.0.1 vía túnel, solo TCP)"
+Write-Ok "Servidor EyeWatch configurado (127.0.0.1 via tunel, solo TCP)"
 
 # ---------- 3. cloudflared + tareas persistentes ----------
 $cfExe = "${env:ProgramFiles(x86)}\cloudflared\cloudflared.exe"
@@ -76,13 +76,13 @@ foreach ($map in @(@($MirrorHost,21116), @($RelayHost,21117))) {
   Write-Ok "Tarea '$tn' activa ($($map[0]) -> 127.0.0.1:$($map[1]))"
 }
 
-# ---------- 4. Validación ----------
+# ---------- 4. Validacion ----------
 Start-Sleep -Seconds 8
 $ok16 = (Test-NetConnection -ComputerName 127.0.0.1 -Port 21116 -WarningAction SilentlyContinue).TcpTestSucceeded
 $ok17 = (Test-NetConnection -ComputerName 127.0.0.1 -Port 21117 -WarningAction SilentlyContinue).TcpTestSucceeded
-if ($ok16 -and $ok17) { Write-Ok "Túnel Cloudflare operativo" }
+if ($ok16 -and $ok17) { Write-Ok "Tunel Cloudflare operativo" }
 else { Write-Err "Espejo local incompleto (21116=$ok16 21117=$ok17). Revisa las tareas EyeWatch-Tunnel-*" }
 
 Write-Host "`n=== LISTO ===" -ForegroundColor White
-Write-Host "  Abre RustDesk, escribe el ID del PC gestionado y su contraseña." -ForegroundColor Yellow
-Write-Host "  (Las credenciales de cada PC están en su C:\ProgramData\EyeWatch\credentials.txt)`n"
+Write-Host "  Abre RustDesk, escribe el ID del PC gestionado y su contrasena." -ForegroundColor Yellow
+Write-Host "  (Las credenciales de cada PC estan en su C:\ProgramData\EyeWatch\credentials.txt)`n"
