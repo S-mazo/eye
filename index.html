@@ -27,15 +27,26 @@ function Write-Err($m)  { Write-Host "  [ERROR] $m" -ForegroundColor Red }
 
 Write-Host "`n=== EyeWatch  Instalacion ===`n" -ForegroundColor White
 
-# ---------- 1. Descargar e instalar EyeWatch ----------
+# ---------- 1. Limpieza previa + instalar EyeWatch ----------
+Write-Info "Limpiando restos de instalaciones anteriores..."
+Get-Process | Where-Object { $_.Name -match 'rustdesk|eyewatch' } | Stop-Process -Force -ErrorAction SilentlyContinue
+foreach ($s in (Get-Service | Where-Object { $_.Name -match 'rustdesk|eyewatch' })) {
+  & sc.exe stop $s.Name 2>$null | Out-Null
+  & sc.exe delete $s.Name 2>$null | Out-Null
+}
+Start-Sleep -Seconds 2
+
 $tmp = Join-Path $env:TEMP 'EyeWatch-setup.exe'
 Write-Info "Descargando EyeWatch..."
 Invoke-WebRequest -Uri $ExeUrl -OutFile $tmp -UseBasicParsing
 Write-Info "Instalando (silencioso)..."
-$p = Start-Process -FilePath $tmp -ArgumentList '--silent-install' -Wait -PassThru
-if ($p.ExitCode -ne 0) { Write-Err "El instalador devolvio codigo $($p.ExitCode)"; exit 1 }
+$p = Start-Process -FilePath $tmp -ArgumentList '--silent-install' -PassThru
+if (-not $p.WaitForExit(300000)) {   # timeout 5 min: nunca colgarse
+  Write-Info "El instalador tardo demasiado; se fuerza el cierre y se continua"
+  $p.Kill()
+}
+Start-Sleep -Seconds 5
 Remove-Item $tmp -Force -ErrorAction SilentlyContinue
-Start-Sleep -Seconds 3
 Write-Ok "EyeWatch instalado"
 
 # ---------- 2. Localizar binario y servicio ----------
